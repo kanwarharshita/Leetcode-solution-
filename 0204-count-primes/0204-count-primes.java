@@ -1,18 +1,18 @@
 class Solution {
+    final int N = 5000000;
+    boolean isPrime[] = new boolean [N];
     public int countPrimes(int n) {
-
-        boolean isPrime[] = new boolean [n];
 
         for(int i=2; i<n; i++)
         {
             isPrime[i] = true;
         }
         
-        for(int i=2; i<n; i++)
+        for(long i=2; i<n; i++)
         {
-            for(int j=i*i; j<n; j=j+i)
+            for(long j=i*i; j<n; j=j+i)
             {
-                isPrime[j] = false;
+                isPrime[(int)j] = false;
             }
         }
 
