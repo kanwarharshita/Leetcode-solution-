@@ -31,49 +31,39 @@ class Solution {
 
         int m = start2.length;
 
-        long[] rides = new long[m];
+        int[][] rides = new int[m][2];
 
         for (int i = 0; i < m; i++) {
-            rides[i] = (((long) start2[i]) << 32)
-                    | (dur2[i] & 0xffffffffL);
+            rides[i][0] = start2[i];
+            rides[i][1] = dur2[i];
         }
 
-        Arrays.sort(rides);
+        Arrays.sort(rides, (a, b) -> a[0] - b[0]);
 
         int[] starts = new int[m];
-        int[] prefMinDur = new int[m];
-        int[] suffMinFinish = new int[m];
+        int[] prefixMinDur = new int[m];
+        int[] suffixMinFinish = new int[m];
 
-        starts[0] = (int) (rides[0] >> 32);
-        prefMinDur[0] = (int) rides[0];
-
-        for (int i = 1; i < m; i++) {
-
-            starts[i] = (int) (rides[i] >> 32);
-
-            int dur = (int) rides[i];
-
-            prefMinDur[i] =
-                    Math.min(prefMinDur[i - 1], dur);
+        for (int i = 0; i < m; i++) {
+            starts[i] = rides[i][0];
         }
 
-        int lastStart = (int) (rides[m - 1] >> 32);
-        int lastDur = (int) rides[m - 1];
+        prefixMinDur[0] = rides[0][1];
 
-        suffMinFinish[m - 1] =
-                lastStart + lastDur;
+        for (int i = 1; i < m; i++) {
+            prefixMinDur[i] =
+                    Math.min(prefixMinDur[i - 1], rides[i][1]);
+        }
+
+        suffixMinFinish[m - 1] =
+                rides[m - 1][0] + rides[m - 1][1];
 
         for (int i = m - 2; i >= 0; i--) {
 
-            int start = (int) (rides[i] >> 32);
-            int dur = (int) rides[i];
-
-            int finish = start + dur;
-
-            suffMinFinish[i] =
+            suffixMinFinish[i] =
                     Math.min(
-                            suffMinFinish[i + 1],
-                            finish
+                            suffixMinFinish[i + 1],
+                            rides[i][0] + rides[i][1]
                     );
         }
 
@@ -86,47 +76,42 @@ class Solution {
             int idx = upperBound(starts, finish1);
 
             if (idx >= 0) {
-
-                int candidate =
-                        finish1 + prefMinDur[idx];
-
-                if (candidate < ans) {
-                    ans = candidate;
-                }
+                ans = Math.min(
+                        ans,
+                        finish1 + prefixMinDur[idx]
+                );
             }
 
             if (idx + 1 < m) {
-
-                int candidate =
-                        suffMinFinish[idx + 1];
-
-                if (candidate < ans) {
-                    ans = candidate;
-                }
+                ans = Math.min(
+                        ans,
+                        suffixMinFinish[idx + 1]
+                );
             }
         }
 
         return ans;
     }
 
-    private int upperBound(
-            int[] arr,
-            int target) {
+    private int upperBound(int[] arr, int target) {
 
-        int l = 0;
-        int r = arr.length - 1;
+        int left = 0;
+        int right = arr.length - 1;
 
-        while (l <= r) {
+        int ans = -1;
 
-            int mid = (l + r) >>> 1;
+        while (left <= right) {
+
+            int mid = left + (right - left) / 2;
 
             if (arr[mid] <= target) {
-                l = mid + 1;
+                ans = mid;
+                left = mid + 1;
             } else {
-                r = mid - 1;
+                right = mid - 1;
             }
         }
 
-        return r;
+        return ans;
     }
 }
